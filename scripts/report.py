@@ -13,7 +13,6 @@ import time
 import json
 import os
 import subprocess
-from pymongo import MongoClient
 from datetime import datetime
 from config import *
 
@@ -27,7 +26,6 @@ class report(object):
         self.userName = self.getUserGit()
         self.branchName = self.getBranchGit()
         self.db = None
-        self.openMongo()
         self.testData = []
         self.error = 0
         if ProjType is 'HW':
@@ -36,10 +34,6 @@ class report(object):
             self.error = self.nasm()
         elif ProjType is 'JAVA':
             self.error = self.error
-
-    def openMongo(self):
-        mongo = MongoClient(host='35.173.122.31', username='myUserAdmin', password='L838gavGe5tuWPH', authSource='admin')
-        self.db = mongo.elementos_test
 
     def getGrupId(self, idFile):
         try:
@@ -122,22 +116,4 @@ class report(object):
                 self.error = self.error + 1
 
     def send(self):
-        try:
-            for n in self.testData:
-                post_id = {'tag':SEMESTRE_ID, 'group':self.groupId, 'project': self.proj, 'test': n['name'], 'branch': self.branchName}
-                ref = self.db.tests.find_one(post_id)
-                if ref is None:
-                    post_id['created'] = datetime.now()
-                    post_id['runs'] = []
-                    self.db.tests.insert(post_id)
-                    ref = self.db.tests.find_one(post_id)
-                ref['updated'] = datetime.now()
-                ref['Travis'] = str(self.Travis)
-                ref['status'] = n['status']
-                ref['runs'].append({'status': n['status'], 'ts': n['ts']})
-                self.db.tests.save(ref)
-                print('.. .', end='', flush=True)
-            print('')
-        except Exception as e:
-           print(e)
-           print('[log] Sem conexão com a internet')
+        pass
